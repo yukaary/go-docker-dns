@@ -44,7 +44,7 @@ mqnode_1 | =WARNING REPORT==== 18-Nov-2014::18:51:55 ===
 mqnode_1 | global: rabbit@bc4193e30191 failed to connect to rabbit@099c212478e7
 ```
 
-mqnode_1 can resolve a name of a master node, but mqnoe_1 can not see mqnode-2 because it's not exist when mqnode-1 is started.
+mqnode_1 can resolve a name of a master node, but mqnode_1 can not see mqnode-2 because it's not exist when mqnode-1 is started.
 
 ## Approachs
 
