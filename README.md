@@ -7,7 +7,7 @@ This DNS server is implemeted based on [miekg/dns](https://github.com/miekg/dns)
 
 To work with a docker tool like a [fig](http://www.fig.sh/index.html) - isolated development environments using Docker -, this program will help a name resolving when you scale a something like a clustered service.
 
-First of all, my motivation to make this is building a rabbitMQ cluster over a 1 coreOS machine using fig. Currently docker itelf has a limitation to link nighborhood containers. There are a way to link a container at starting a container with link option. It links a working container, but not working one. While using a fig, RabbitMQ try to access another nodes when a new node (machine) is added.
+First of all, my motivation to make this is building a rabbitMQ cluster over a 1 coreOS machine using fig. Currently docker itelf has a limitation to link nighborhood containers. There are a way to link a container at starting with `--link` option. It can link a working container, but not working one. While using a fig, RabbitMQ try to access another nodes when a new node is added.
 
 
 Here is a sample `fig.yml`.
@@ -36,7 +36,7 @@ $ fig start mqnode
 $ fig scale mqnode=2
 ```
 
-`fig scale mqnode=2` fails to add a second node with an error like this.
+`fig scale mqnode=2` fails to join a second node with an error like this.
 ```
 mqnode_2 | Clustering node rabbit@099c212478e7 with rabbit@rabbit_1 ...
 mqnode_1 | 
