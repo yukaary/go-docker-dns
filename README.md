@@ -41,7 +41,7 @@ mqnode:
         - RAM_NODE=true
 ```
 
-Using this configuration, fig can link a 1 master and 1 slave. But multiple slaves are not available because of the failer of name resolving.
+Using this configuration, fig can link a 1 master and 1 slave. But multiple slaves are not available because of the failure of name resolving.
 
 ```
 $ fig start rabbit
