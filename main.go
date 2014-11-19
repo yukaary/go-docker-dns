@@ -58,7 +58,7 @@ func handleContainerRequest(w dns.ResponseWriter, r *dns.Msg) {
 	// Find IP address from a hostname.
 	hostname := m.Question[0].Name
 	ipaddr := arecords.Find(hostname)
-	glog.Infof("ipaddr: %s", ipaddr.String())
+	//glog.Infof("ipaddr: %s", ipaddr.String())
 
 	//  If hostname is not registered or a container was stopped,
 	//  Do not reply anything.
@@ -116,13 +116,13 @@ func serve(net, name, secret string) {
 		server := &dns.Server{Addr: ":" + port, Net: net, TsigSecret: nil}
 		err := server.ListenAndServe()
 		if err != nil {
-			fmt.Printf("Failed to setup the "+net+" server: %s\n", err.Error())
+			glog.Errorf("Failed to setup the "+net+" server: %s\n", err.Error())
 		}
 	default:
 		server := &dns.Server{Addr: ":" + port, Net: net, TsigSecret: map[string]string{name: secret}}
 		err := server.ListenAndServe()
 		if err != nil {
-			fmt.Printf("Failed to setup the "+net+" server: %s\n", err.Error())
+			glog.Errorf("Failed to setup the "+net+" server: %s\n", err.Error())
 		}
 	}
 }
@@ -154,7 +154,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	//dns.HandleFunc("kogasan.net", handleReflect)
+	//dns.HandleFunc("yukaary.net", handleYukaaryRequest)
 	dns.HandleFunc(".", handleContainerRequest)
 
 	go serve("tcp", name, secret)
@@ -177,8 +177,16 @@ forever:
 }
 
 func watch(url string) {
-	eventUrl := "http://" + url + "/events"
 
+	// test given host provides a remote api.
+	testUrl := "http://" + url + "/images/json"
+	if _, ret := apiwatch.GetContent(testUrl); ret == false {
+		glog.Errorf("cloud not access test endpoint %s. It might not provide a docker remote api.", testUrl)
+		os.Exit(1)
+	}
+
+	// watch http streaming on /events.
+	eventUrl := "http://" + url + "/events"
 	glog.Infof("start watching docker api: %s", eventUrl)
 
 	apiwatch.ReadStream(eventUrl, func(id string, status string) {
@@ -187,7 +195,7 @@ func watch(url string) {
 		switch status {
 		case "start":
 			glog.Infof("inspect: %s\n", inspectUrl)
-			data := apiwatch.GetContent(inspectUrl)
+			data, _ := apiwatch.GetContent(inspectUrl)
 			containerInfo := apiwatch.JsonToMap(data)
 			config, _ := containerInfo["Config"].(map[string]interface{})
 
@@ -195,7 +203,7 @@ func watch(url string) {
 			registerIp(config["Hostname"].(string), networkSettings["IPAddress"].(string))
 		case "stop":
 			glog.Infof("inspect: %s\n", inspectUrl)
-			data := apiwatch.GetContent(inspectUrl)
+			data, _ := apiwatch.GetContent(inspectUrl)
 			containerInfo := apiwatch.JsonToMap(data)
 			config, _ := containerInfo["Config"].(map[string]interface{})
 

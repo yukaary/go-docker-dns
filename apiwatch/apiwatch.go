@@ -5,7 +5,6 @@ import (
 	"github.com/golang/glog"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -71,7 +70,7 @@ func ReadStream(endpoint string, fn processevent) {
 	}
 }
 
-func GetContent(endpoint string) (data interface{}) {
+func GetContent(endpoint string) (data interface{}, result bool) {
 
 	resp, err := http.Get(endpoint)
 	if err == nil {
@@ -80,15 +79,14 @@ func GetContent(endpoint string) (data interface{}) {
 		dec := json.NewDecoder(resp.Body)
 		if err := dec.Decode(&data); err != nil {
 			glog.Error("Error in decoding: ", err)
-			os.Exit(1)
+			return nil, false
 		}
-		return data
+		return data, true
 	} else {
 		glog.Error("Error in stream: ", err)
-		os.Exit(1)
 	}
 
-	return
+	return nil, false
 }
 
 func JsonToMap(f interface{}) map[string]interface{} {
