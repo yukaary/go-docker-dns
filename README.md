@@ -9,6 +9,7 @@ It binds port 53, you need to BE A ROOT.
 
 example:
 ```
+$ go get github.com/yukaary/go-docker-dns
 $ sudo su
 $ ./go-docker-dns stderrthreshold=INFO -url 172.17.8.101:2375
 ```
