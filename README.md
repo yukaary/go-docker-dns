@@ -73,11 +73,11 @@ mqnode:
 ```
 
 Start this program.
-* You need be a root because the port 53 is well-known.
+* You need to be a root because the port 53 is well-known.
 * When DNSMasq is activate, it will fail to bind a port 53.
 
 ```
-$ go install github.com/yukaary/go-docker-dns
+$ go get github.com/yukaary/go-docker-dns
 $ sudo su
 $ export GOROOT=/usr/local/go
 $ export GOPATH=/home/xxxx/go
@@ -92,4 +92,4 @@ $ fig start mqnode
 $ fig scale mqnode=2
 ```
 
-Then access to `http://your.docker.host:15672` will contain 3 nodes(1 master `rabbit` and 2 slaves)
+Then access to `http://your.docker.host:15672` will contain 3 nodes.(1 master `rabbit` and 2 slaves)
