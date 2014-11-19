@@ -4,11 +4,11 @@
 package main
 
 import (
-	"./apiwatch"
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/miekg/dns"
+	"github.com/yukaary/go-docker-dns/apiwatch"
 	"log"
 	"net"
 	"os"
