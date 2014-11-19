@@ -3,6 +3,21 @@
 For a docker container written by Go.
 This DNS server is implemeted based on [miekg/dns](https://github.com/miekg/dns).
 
+## Usage
+
+It binds port 53, you need to BE A ROOT.
+
+example:
+```
+$ sudo su
+$ ./go-docker-dns stderrthreshold=INFO -url 172.17.8.101:2375
+```
+
+* 'stderrthreshold=INFO` puts all debugging information.
+* `url` should point a docker remote api.
+
+Then, run docker container with `--dns` option. Inside a container, `/etc/resolve.conf` should hold a given DNS IP.
+
 ## Purpose
 
 To work with a docker tool like a [fig](http://www.fig.sh/index.html) - isolated development environments using Docker -, this program will help a name resolving when you scale a something like a clustered service.
