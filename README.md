@@ -14,7 +14,7 @@ $ sudo su
 $ ./go-docker-dns stderrthreshold=INFO -url 172.17.8.101:2375
 ```
 
-* 'stderrthreshold=INFO` puts all debugging information.
+* `stderrthreshold=INFO` puts all debugging information.
 * `url` should point a docker remote api.
 
 Then, run docker container with `--dns` option. Inside a container, `/etc/resolve.conf` should hold a given DNS IP.
