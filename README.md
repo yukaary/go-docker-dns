@@ -58,29 +58,32 @@ rabbit:
     ports:
         - "5672:5672"
         - "15672:15672"
+    # for instance, it might be your host machine's IP on vboxnet.
     dns:
-        - "IP addr over running this program"
+        - "172.17.8.1"
 mqnode:
     image: bijukunjummen/rabbitmq-server
     environment:
         - CLUSTERED=true
         - CLUSTER_WITH=rabbit_1
         - RAM_NODE=true
+    # for instance, it might be your host machine's IP on vboxnet.
     dns:
-        - "IP addr over running this program"
+        - "172.17.8.1"
 ```
 
 Start this program.
-(it's just a prototype. So please install depended libraries by `go get`)
+* You need be a root because the port 53 is well-known.
+* When DNSMasq is activate, it will fail to bind a port 53.
 
 ```
+$ go install github.com/yukaary/go-docker-dns
 $ sudo su
 $ export GOROOT=/usr/local/go
 $ export GOPATH=/home/xxxx/go
-$ go run main.go -stderrthreshold=INFO -url your.docker.host:2735
+$ cd $GOPATH/bin/
+$ ./go-docker-dns -stderrthreshold=INFO -url your.docker.host:2375
 ```
-
-* When DNSMasq is activate, it will fail to bind a port 53.
 
 After that, start rabbitMQ cluster.
 ```
