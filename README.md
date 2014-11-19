@@ -92,4 +92,4 @@ $ fig start mqnode
 $ fig scale mqnode=2
 ```
 
-Then access to `http://your.docker.host:15672` will contain a 1 master node and 2 clusters.
+Then access to `http://your.docker.host:15672` will contain 3 nodes(1 master `rabbit` and 2 slaves)
