@@ -77,7 +77,7 @@ Start this program.
 $ sudo su
 $ export GOROOT=/usr/local/go
 $ export GOPATH=/home/xxxx/go
-$ go run main.go -stderrthreshold=INFO -url $DOCKER_HOST
+$ go run main.go -stderrthreshold=INFO -url your.docker.host:2735
 ```
 
 * When DNSMasq is activate, it will fail to bind a port 53.
