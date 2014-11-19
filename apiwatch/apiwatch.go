@@ -55,6 +55,9 @@ func ReadStream(endpoint string, fn processevent) {
 						break
 					}
 				}
+				// Debugging
+				//glog.Infof("%s", string(line[:]))
+
 				var data interface{}
 				json.Unmarshal(line, &data)
 				event := JsonToMap(data)

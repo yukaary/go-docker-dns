@@ -184,17 +184,21 @@ func watch(url string) {
 	apiwatch.ReadStream(eventUrl, func(id string, status string) {
 		inspectUrl := "http://" + url + "/containers/" + id + "/json"
 
-		glog.Infof("inspect: %s\n", inspectUrl)
-		data := apiwatch.GetContent(inspectUrl)
-		containerInfo := apiwatch.JsonToMap(data)
-		config, _ := containerInfo["Config"].(map[string]interface{})
-		glog.Infof("hostname: %s\n", config["Hostname"])
-
 		switch status {
 		case "start":
+			glog.Infof("inspect: %s\n", inspectUrl)
+			data := apiwatch.GetContent(inspectUrl)
+			containerInfo := apiwatch.JsonToMap(data)
+			config, _ := containerInfo["Config"].(map[string]interface{})
+
 			networkSettings, _ := containerInfo["NetworkSettings"].(map[string]interface{})
 			registerIp(config["Hostname"].(string), networkSettings["IPAddress"].(string))
 		case "stop":
+			glog.Infof("inspect: %s\n", inspectUrl)
+			data := apiwatch.GetContent(inspectUrl)
+			containerInfo := apiwatch.JsonToMap(data)
+			config, _ := containerInfo["Config"].(map[string]interface{})
+
 			unregisterIp(config["Hostname"].(string))
 		default:
 		}
@@ -204,8 +208,6 @@ func watch(url string) {
 func registerIp(id string, ipaddr string) {
 	glog.Infof("register %s, %s", id, ipaddr)
 	arecords.Add(id+".", net.ParseIP(ipaddr))
-
-	glog.Infof("current records: %v", arecords.Records())
 }
 
 func unregisterIp(id string) {
