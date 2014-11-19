@@ -20,8 +20,6 @@ import (
 )
 
 var (
-	printf   *bool
-	compress *bool
 	tsig     *string
 	docker   *string
 	arecords *apiwatch.AR
@@ -38,7 +36,6 @@ func handleContainerRequest(w dns.ResponseWriter, r *dns.Msg) {
 	)
 	m := new(dns.Msg)
 	m.SetReply(r)
-	m.Compress = *compress
 
 	if ip, ok := w.RemoteAddr().(*net.UDPAddr); ok {
 		str = "Port: " + strconv.Itoa(ip.Port) + " (udp)"
@@ -58,11 +55,11 @@ func handleContainerRequest(w dns.ResponseWriter, r *dns.Msg) {
 	// Find IP address from a hostname.
 	hostname := m.Question[0].Name
 	ipaddr := arecords.Find(hostname)
-	//glog.Infof("ipaddr: %s", ipaddr.String())
 
 	//  If hostname is not registered or a container was stopped,
 	//  Do not reply anything.
 	if ipaddr == nil {
+		glog.Info("no answer.")
 		w.WriteMsg(m)
 		return
 	}
@@ -129,8 +126,6 @@ func serve(net, name, secret string) {
 
 func main() {
 	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")
-	printf = flag.Bool("print", false, "print replies")
-	compress = flag.Bool("compress", false, "compress replies")
 	tsig = flag.String("tsig", "", "use MD5 hmac tsig: keyname:base64")
 	docker = flag.String("url", "192.168.59.103:2375", "docker url")
 
