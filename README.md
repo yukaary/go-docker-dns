@@ -11,11 +11,11 @@ example:
 ```
 $ go get github.com/yukaary/go-docker-dns
 $ sudo su
-$ ./go-docker-dns stderrthreshold=INFO -url 172.17.8.101:2375
+$ ./go-docker-dns -stderrthreshold=INFO -url 172.17.8.101:2375,172.17.8.102:2375
 ```
 
 * `stderrthreshold=INFO` puts all debugging information.
-* `url` should point a docker remote api.
+* `url` should specify a docker remote api, allowing multiple docker host.
 
 Then, run docker container with `--dns` option. Inside a container, `/etc/resolve.conf` should hold a given DNS IP.
 

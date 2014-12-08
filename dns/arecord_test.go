@@ -1,4 +1,4 @@
-package apiwatch
+package dns_test
 
 import (
 	yukaarydns "github.com/yukaary/go-docker-dns/dns"

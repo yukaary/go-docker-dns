@@ -10,6 +10,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/yukaary/go-docker-dns/apiwatch"
 	yukaarydns "github.com/yukaary/go-docker-dns/dns"
+	"github.com/yukaary/go-docker-dns/utils"
 	"log"
 	"net"
 	"os"
@@ -56,7 +57,12 @@ func main() {
 	go yukaarydns.Serve("udp", name, secret)
 
 	// run docker api watcher
-	go watch(*docker)
+
+	for _, url := range utils.SplitAndRemoveSpace(*docker, ",") {
+		go watch(url)
+	}
+
+	//go watch(*docker)
 
 	sig := make(chan os.Signal)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
