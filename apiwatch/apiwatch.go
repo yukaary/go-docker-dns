@@ -3,38 +3,11 @@ package apiwatch
 import (
 	"encoding/json"
 	"github.com/golang/glog"
-	"net"
 	"net/http"
 	"strconv"
 )
 
-type AR struct {
-	records map[string]net.IP
-}
-
 type processevent func(string, string)
-
-func (self *AR) initialize() {
-	self.records = make(map[string]net.IP)
-}
-
-func NewAR() *AR {
-	ar := &AR{}
-	ar.initialize()
-	return ar
-}
-
-func (self *AR) Add(name string, ip net.IP) {
-	self.records[name] = ip
-}
-
-func (self *AR) Find(name string) (ip net.IP) {
-	return self.records[name]
-}
-
-func (self *AR) Records() map[string]net.IP {
-	return self.records
-}
 
 func ReadStream(endpoint string, fn processevent) {
 	resp, err := http.Get(endpoint)
