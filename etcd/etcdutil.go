@@ -12,7 +12,8 @@ type EtcdClient struct {
 	client *etcd.Client
 }
 
-func NewEtcdClient(client *etcd.Client) *EtcdClient {
+func NewEtcdClient(etcd_endpoints []string) *EtcdClient {
+	client := etcd.NewClient(etcd_endpoints)
 	etcdcli := &EtcdClient{client: client}
 	return etcdcli
 }
@@ -26,6 +27,15 @@ func (self *EtcdClient) Set(value string, keychain ...string) bool {
 		return false
 	}
 	return true
+}
+
+func (self *EtcdClient) GetDir(key string) etcd.Nodes {
+	// get child dir/value recursively
+	res, err := self.client.Get(key, true, true)
+	if err == nil && res.Node.Dir == true {
+		return res.Node.Nodes
+	}
+	return nil
 }
 
 func (self *EtcdClient) AddDirIfNotExist(keychain ...string) bool {

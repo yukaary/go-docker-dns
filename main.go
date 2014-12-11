@@ -6,7 +6,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/coreos/go-etcd/etcd"
 	"github.com/golang/glog"
 	"github.com/miekg/dns"
 	"github.com/yukaary/go-docker-dns/apiwatch"
@@ -65,9 +64,8 @@ func main() {
 	docker_endpoints := etcdutil.GetClusterEndpoints(*machine_discover_etcd, *discover_key, 2375)
 	// NEXT, this should support machine scaling
 	etcd_endpoints := etcdutil.GetClusterEndpoints(*machine_discover_etcd, *discover_key, 4001)
-	client := etcd.NewClient(etcd_endpoints)
 
-	etcdcli := etcdutil.NewEtcdClient(client)
+	etcdcli := etcdutil.NewEtcdClient(etcd_endpoints)
 	etcdcli.AddDirIfNotExist("services")
 
 	for _, url := range docker_endpoints {
