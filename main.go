@@ -6,11 +6,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/coreos/go-etcd/etcd"
 	"github.com/golang/glog"
 	"github.com/miekg/dns"
 	"github.com/yukaary/go-docker-dns/apiwatch"
 	yukaarydns "github.com/yukaary/go-docker-dns/dns"
-	"github.com/yukaary/go-docker-dns/utils"
+	etcdutil "github.com/yukaary/go-docker-dns/etcd"
+	yukaaryutils "github.com/yukaary/go-docker-dns/utils"
 	"log"
 	"net"
 	"os"
@@ -21,15 +23,18 @@ import (
 )
 
 var (
-	tsig   *string
-	docker *string
+	tsig                  *string
+	machine_discover_etcd *string
+	discover_key          *string
 )
 
 func main() {
 	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")
 	tsig = flag.String("tsig", "", "use MD5 hmac tsig: keyname:base64")
-	docker = flag.String("url", "192.168.59.103:2375", "docker url")
+	machine_discover_etcd = flag.String("machine-discover-etcd", "http://127.0.0.1:4001", "etcd url for machine discovery")
+	discover_key = flag.String("discover-key", "machines", "machine discover key")
 
+	// initialize A record
 	yukaarydns.NewAR()
 
 	var name, secret string
@@ -57,9 +62,17 @@ func main() {
 	go yukaarydns.Serve("udp", name, secret)
 
 	// run docker api watcher
+	docker_endpoints := etcdutil.GetClusterEndpoints(*machine_discover_etcd, *discover_key, 2375)
+	// NEXT, this should support machine scaling
+	etcd_endpoints := etcdutil.GetClusterEndpoints(*machine_discover_etcd, *discover_key, 4001)
+	client := etcd.NewClient(etcd_endpoints)
 
-	for _, url := range utils.SplitAndRemoveSpace(*docker, ",") {
-		go watch(url)
+	etcdcli := etcdutil.NewEtcdClient(client)
+	etcdcli.AddDirIfNotExist("services")
+
+	for _, url := range docker_endpoints {
+		glog.Infof("url %s", url)
+		go watch(url, etcdcli)
 	}
 
 	//go watch(*docker)
@@ -80,21 +93,21 @@ forever:
 /**
  * Watch docker api "/events" to monitor container start/stop.
  */
-func watch(url string) {
+func watch(url string, etcdcli *etcdutil.EtcdClient) {
 
 	// test given host provides a remote api.
-	testUrl := "http://" + url + "/images/json"
+	testUrl := url + "/images/json"
 	if _, ret := apiwatch.GetContent(testUrl); ret == false {
 		glog.Errorf("cloud not access test endpoint %s. It might not provide a docker remote api.", testUrl)
 		os.Exit(1)
 	}
 
 	// watch http streaming on /events.
-	eventUrl := "http://" + url + "/events"
+	eventUrl := url + "/events"
 	glog.Infof("start watching docker api: %s", eventUrl)
 
 	apiwatch.ReadStream(eventUrl, func(id string, status string) {
-		inspectUrl := "http://" + url + "/containers/" + id + "/json"
+		inspectUrl := url + "/containers/" + id + "/json"
 
 		switch status {
 		case "start":
@@ -104,25 +117,32 @@ func watch(url string) {
 			config, _ := containerInfo["Config"].(map[string]interface{})
 
 			networkSettings, _ := containerInfo["NetworkSettings"].(map[string]interface{})
-			registerIp(config["Hostname"].(string), networkSettings["IPAddress"].(string))
+			registerIp(config["Hostname"].(string), networkSettings["IPAddress"].(string), etcdcli)
 		case "stop":
 			glog.Infof("inspect: %s\n", inspectUrl)
 			data, _ := apiwatch.GetContent(inspectUrl)
 			containerInfo := apiwatch.JsonToMap(data)
 			config, _ := containerInfo["Config"].(map[string]interface{})
 
-			unregisterIp(config["Hostname"].(string))
+			unregisterIp(config["Hostname"].(string), etcdcli)
 		default:
 		}
 	})
 }
 
-func registerIp(id string, ipaddr string) {
+func registerIp(id string, ipaddr string, etcdcli *etcdutil.EtcdClient) {
 	glog.Infof("register %s, %s", id, ipaddr)
 	yukaarydns.Arecord.Add(id+".", net.ParseIP(ipaddr))
+
+	service, _ := yukaaryutils.SplitScaledHostname(id)
+	etcdcli.AddDirIfNotExist("services", service)
+	etcdcli.Set(ipaddr, "services", service, id)
 }
 
-func unregisterIp(id string) {
+func unregisterIp(id string, etcdcli *etcdutil.EtcdClient) {
 	glog.Infof("unregister %s", id)
 	yukaarydns.Arecord.Add(id+".", nil)
+
+	service, _ := yukaaryutils.SplitScaledHostname(id)
+	etcdcli.DeleteAll("services", service, id)
 }
