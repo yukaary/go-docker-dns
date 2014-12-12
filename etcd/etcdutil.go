@@ -29,8 +29,9 @@ func (self *EtcdClient) Set(value string, keychain ...string) bool {
 	return true
 }
 
-func (self *EtcdClient) GetDir(key string) etcd.Nodes {
+func (self *EtcdClient) GetDir(keychain ...string) etcd.Nodes {
 	// get child dir/value recursively
+	key := strings.Join(keychain, "/")
 	res, err := self.client.Get(key, true, true)
 	if err == nil && res.Node.Dir == true {
 		return res.Node.Nodes
